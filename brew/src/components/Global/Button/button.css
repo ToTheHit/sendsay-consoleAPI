@@ -1,0 +1,31 @@
+.Button {
+  height: 40px;
+  max-height: 40px;
+  min-width: 110px;
+  background: linear-gradient(180deg, #45A6FF 0%, #0055FB 100%), #C4C4C4;
+  border-radius: 5px;
+  border: none;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 30px;
+  color: white;
+  outline: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.Button:disabled {
+  background: linear-gradient(0deg, #C4C4C4, #C4C4C4), linear-gradient(180deg, #45A6FF 0%, #0055FB 100%);
+}
+.Button:hover:enabled {
+  cursor: pointer;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15)), linear-gradient(180deg, #45A6FF 0%, #0055FB 100%), #C4C4C4;
+}
+.Button:focus:enabled {
+  border-radius: 7px;
+  box-shadow: 0 0 0 1px rgba(69, 165, 255, 0.5);
+}
+.Button:active:enabled {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), linear-gradient(180deg, #45A6FF 0%, #0055FB 100%), #C4C4C4;
+}

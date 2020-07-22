@@ -1,0 +1,278 @@
+import React, {
+  useCallback, useEffect, useRef, useState,
+} from 'react';
+import './editor.css';
+import { useDispatch, useSelector } from 'react-redux';
+import DragElement from '../../../assets/Work/drag-element.svg';
+import classNames from '../../../lib/classNames';
+import Button from '../../Global/Button/Button';
+import AlignRight from '../../../assets/Work/align-right.svg';
+import globalVariables from '../../../GlobalVariables';
+
+const Editor = () => {
+  const firstFieldRef = useRef(null);
+  const wrapperRef = useRef(null);
+  const handlerRef = useRef(null);
+
+  const [isHandlerDragging, setIsHandlerDragging] = useState(false);
+  const [isRequestFailed, setIsRequestFailed] = useState(false);
+  const [isResponseFailed, setIsResponseFailed] = useState(false);
+  const [requestContent, setRequestContent] = useState('');
+  const [responseContent, setResponseContent] = useState('');
+  const [isSending, setIsSending] = useState(false);
+
+  const sendsayBridge = useSelector((state) => state.sendsayBridge.sendsay);
+  const actions = useSelector((state) => state.userInfo.actions);
+  const execAction = useSelector((state) => state.execAction);
+  const setAction = useSelector((state) => state.setAction);
+  const dispatch = useDispatch();
+
+  function stringToJSON(string) {
+    let obj;
+    obj = string
+      .replace(/\n/g, '')
+      .replace(/([{,])(\s*)([A-Za-z0-9_\\-]+?)\s*:/g, '$1"$3":')
+      .replace(/'/g, '"');
+    obj = JSON.parse(obj);
+    if (typeof obj !== 'object') {
+      throw new Error('Request error: text is not object');
+    }
+    return obj;
+  }
+
+  function prettyPrint() {
+    let pretty;
+    if (!requestContent) return;
+    try {
+      pretty = JSON.stringify(stringToJSON(requestContent), undefined, 4);
+    } catch (e) {
+      console.error(e);
+      setIsRequestFailed(true);
+      return;
+    }
+    setRequestContent(pretty);
+  }
+
+  function sendAction(action) {
+    if (isSending) return;
+    setIsSending(true);
+    if (!action) return;
+    let obj; let isSuccess = false; let
+      serverResponse;
+    try {
+      obj = stringToJSON(action);
+    } catch (e) {
+      console.error(e);
+      setIsRequestFailed(true);
+      setIsSending(false);
+      return;
+    }
+
+    sendsayBridge.request(obj)
+      .then((data) => {
+        setResponseContent(JSON.stringify(data, undefined, 4));
+        isSuccess = true;
+      })
+      .catch((err) => {
+        setResponseContent(JSON.stringify(err, undefined, 4));
+        serverResponse = JSON.stringify(err, undefined, 4);
+        setIsResponseFailed(true);
+      })
+      .finally(() => {
+        const temp = actions;
+        for (let i = 0; i < temp.length; i += 1) {
+          if (temp[i].action === obj.action) {
+            temp.splice(i, 1);
+            break;
+          }
+        }
+        temp.push({
+          action: obj.action,
+          isSuccess,
+          id: Math.random().toString(36).substr(2, 9),
+          content: JSON.stringify(obj, undefined, 4),
+          response: serverResponse,
+        });
+        if (temp.length > globalVariables.maxActionsInHistory) {
+          temp.splice(0, 1);
+        }
+        dispatch({
+          type: 'UPDATE_USER_INFO',
+          payload: {
+            actions: temp,
+          },
+        });
+        setIsSending(false);
+      });
+  }
+
+  useEffect(() => {
+    if (execAction.action) {
+      setRequestContent(execAction.action);
+      sendAction(execAction.action);
+      dispatch({
+        type: 'EXEC_ACTION',
+        payload: {
+          action: '',
+        },
+      });
+    }
+  }, [execAction]);
+
+  useEffect(() => {
+    if (setAction.action) {
+      setRequestContent(setAction.action);
+      dispatch({
+        type: 'SET_ACTION',
+        payload: {
+          action: '',
+        },
+      });
+    }
+  }, [setAction]);
+
+  useEffect(() => {
+    sendsayBridge.request({
+      action: 'sys.storage.get',
+      id: globalVariables.fieldWidthIDinStorage,
+    })
+      .then((data) => {
+        firstFieldRef.current.style.width = `${wrapperRef.current.offsetWidth * data.obj.data.widthRatio}px`;
+        firstFieldRef.current.style.flexGrow = 0;
+      })
+      .catch((err) => console.info('Error when fetch data', err));
+  }, []);
+
+  const checkHandler = useCallback((e) => {
+    if (handlerRef.current.contains(e.target)) {
+      setIsHandlerDragging(true);
+    }
+  }, []);
+
+  const drag = useCallback((e) => {
+    if (!isHandlerDragging) {
+      return false;
+    }
+    const clientX = e.clientX ? e.clientX : e.touches[0].clientX;
+    const containerOffsetLeft = wrapperRef.current.offsetLeft;
+
+    const pointerRelativeXpos = clientX - containerOffsetLeft;
+
+    const fieldMinWidth = 60;
+    firstFieldRef.current.style.width = `${Math.max(fieldMinWidth, pointerRelativeXpos - 8)}px`;
+    firstFieldRef.current.style.flexGrow = 0;
+  }, [isHandlerDragging]);
+
+  const stopDrag = useCallback(() => {
+    setIsHandlerDragging(false);
+
+    // Сохраняем соотношение ширины левого поля ввода к общей области
+    sendsayBridge.request({
+      action: 'sys.storage.set',
+      id: globalVariables.fieldWidthIDinStorage,
+      obj: {
+        data: {
+          widthRatio: firstFieldRef.current.offsetWidth / wrapperRef.current.offsetWidth,
+        },
+      },
+      return_fresh_obj: 0,
+    })
+      .catch((err) => console.info('Error when set data in storage', err));
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', drag, { passive: false });
+    window.addEventListener('touchmove', drag, { passive: false });
+    window.addEventListener('mouseup', stopDrag, { passive: false });
+    window.addEventListener('touchend', stopDrag, { passive: false });
+    return () => {
+      window.removeEventListener('mousemove', drag, { passive: false });
+      window.removeEventListener('touchmove', drag, { passive: false });
+      window.removeEventListener('mouseup', stopDrag, { passive: false });
+      window.removeEventListener('touchend', stopDrag, { passive: false });
+    };
+  }, [drag]);
+
+  useEffect(() => {
+    if (isRequestFailed) {
+      setIsRequestFailed(false);
+    }
+    if (isResponseFailed) {
+      setIsResponseFailed(false);
+    }
+  }, [requestContent]);
+
+  return (
+    <div className="Editor">
+      <div className="Editor__wrapper" ref={wrapperRef}>
+        <div className="Editor__field" ref={firstFieldRef}>
+          <div
+            className={classNames('Editor__title', (isRequestFailed && 'Editor__title--failed'))}
+          >
+            Запрос:
+          </div>
+          <textarea
+            className={classNames('Editor__entry', (isRequestFailed && 'Editor__entry--failed'))}
+            value={requestContent}
+            onChange={(e) => {
+              setRequestContent(e.target.value);
+            }}
+          />
+        </div>
+        <div
+          className="Editor__drag"
+          ref={handlerRef}
+          onMouseDown={checkHandler}
+          onMouseUp={stopDrag}
+          onTouchStart={checkHandler}
+          onTouchEnd={stopDrag}
+        >
+          <DragElement />
+        </div>
+
+        <div className="Editor__field">
+          <div
+            className={classNames('Editor__title', (isResponseFailed && 'Editor__title--failed'))}
+          >
+            Ответ:
+          </div>
+          <textarea
+            disabled
+            className={classNames('Editor__entry', (isResponseFailed && 'Editor__entry--failed'))}
+            value={responseContent}
+            onChange={(e) => {
+              setResponseContent(e.target.value);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="Editor__footer">
+        <div className="Editor__footerContent">
+          <Button
+            type="button"
+            onClick={() => sendAction(requestContent)}
+            isSending={isSending}
+          >
+            Отправить
+          </Button>
+          <a href="https://github.com/ToTheHit" className="Editor__github">@ToTheHit</a>
+          <button
+            type="button"
+            className="Editor__format"
+            onClick={() => {
+              prettyPrint();
+            }}
+          >
+            <AlignRight className="Editor__icon" />
+            <span className="Editor__formatText">Форматировать</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+Editor.propTypes = {};
+Editor.defaultProps = {};
+export default Editor;
