@@ -1,0 +1,137 @@
+.Editor {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  margin-left: 15px;
+  margin-right: 15px;
+
+  &__wrapper {
+    margin: 10px 0 15px 0;
+    display: flex;
+    flex-grow: 1;
+    max-width: 100%;
+  }
+
+  &__field {
+    min-width: 20%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    flex: 1 1 auto;
+  }
+
+  &__entry {
+    padding: 10px;
+    outline: none;
+    height: 100% !important;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 5px !important;
+    font-size: 14px;
+    line-height: 18px;
+    color: #0D0D0D;
+    resize: none;
+    font-family: "Fira Code", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+    background: white;
+
+    &:disabled {
+      background: white;
+    }
+    &:focus {
+      box-shadow: 0 0 0 1px rgba(69, 165, 255, 0.5);
+    }
+
+    &--failed {
+      border: 1px solid #CF2C00;
+      box-sizing: border-box;
+      box-shadow: 0px 0px 5px rgba(207, 44, 0, 0.5);
+      border-radius: 5px;
+      &:focus {
+        box-shadow: 0 0 5px rgba(207, 44, 0, 0.5);
+      }
+    }
+  }
+
+  &__title {
+    user-select: none;
+    font-size: 12px;
+    color: #999999;
+    &--failed {
+      color: #CF2C00;
+    }
+  }
+
+  &__drag {
+    padding: 20px 5px;
+
+    svg {
+      fill: rgba(0, 0, 0, 0.2);
+    }
+
+    align-self: center;
+
+    &:hover {
+      cursor: ew-resize;
+
+      svg {
+        fill: rgba(0, 0, 0, 0.4);
+      }
+    }
+  }
+
+  &__footer {
+    margin: 0 -15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+  }
+  &__footerContent {
+    margin: 0 15px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  &__github {
+    font-size: 16px;
+    color: #999999;
+  }
+  &__format {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    border-radius: 7px;
+    outline: none;
+    border: none;
+    background: white;
+
+    svg {
+      stroke: #0D0D0D;
+      fill: #0D0D0D;
+    }
+
+    &:hover {
+      cursor: pointer;
+      box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.2);
+      svg {
+        fill: #0055FB;
+        stroke: #0055FB;
+      }
+      color: #0055FB;
+    }
+    &:focus {
+      border: 2px solid rgba(69, 165, 255, 0.5);
+      border-radius: 7px;
+      padding-left: 3px;
+      padding-right: 3px;
+    }
+  }
+  &__icon {
+    margin-right: 8px;
+  }
+}

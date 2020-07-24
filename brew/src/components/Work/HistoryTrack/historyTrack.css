@@ -1,0 +1,45 @@
+.HistoryTrack {
+  height: 50px;
+  background: #F6F6F6;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.HistoryTrack__actions {
+  display: flex;
+  overflow-x: auto;
+  align-items: center;
+  height: 100%;
+  max-width: 100%;
+}
+.HistoryTrack__actions::-webkit-scrollbar {
+  display: none;
+}
+.HistoryTrack__actions::after {
+  content: " ";
+  min-width: 15px;
+  height: 15px;
+  display: block;
+}
+.HistoryTrack__close {
+  min-width: 50px;
+  height: 100%;
+  border: none;
+  border-left: 1px solid rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 20px 0 #dcd8d8;
+  -webkit-clip-path: inset(0px -20px 0px -20px);
+          clip-path: inset(0px -20px 0px -20px);
+  outline: none;
+  background: #F6F6F6;
+}
+.HistoryTrack__close:hover {
+  cursor: pointer;
+  color: #0055FB;
+}
+.HistoryTrack__close:focus {
+  border: 2px solid rgba(69, 165, 255, 0.5);
+}

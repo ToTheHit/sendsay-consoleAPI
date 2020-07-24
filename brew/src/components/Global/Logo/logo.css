@@ -1,0 +1,22 @@
+.Logo {
+  display: flex;
+}
+.Logo__circle {
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+}
+.Logo__circle:not(:first-child) {
+  margin-left: 5px;
+}
+.Logo__rectangle {
+  height: 30px;
+  width: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  margin-left: 5px;
+}
+.Logo__rectangle--skew {
+  transform: skew(-27deg, 0);
+  margin-left: 7px;
+}

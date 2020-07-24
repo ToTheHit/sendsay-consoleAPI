@@ -1,0 +1,13 @@
+.Empty {
+  height: 100%;
+  width: 100%;
+}
+.Empty--box {
+  height: 300px;
+  width: 300px;
+  background-color: #4caf50;
+}
+.Empty .YT_video {
+  height: 500px;
+  width: 700px;
+}
