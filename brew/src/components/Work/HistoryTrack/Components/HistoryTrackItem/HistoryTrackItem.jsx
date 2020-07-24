@@ -7,7 +7,7 @@ import Drag from '../../../../../assets/Work/drag-element.svg';
 
 const HistoryTrackItem = (props) => {
   const {
-    isSuccess, action, content, id,
+    isSuccess, action, content, id, serverResponse
   } = props;
   const [isCopied, setIsCopied] = useState(false);
   const itemRef = useRef(null);
@@ -35,8 +35,7 @@ const HistoryTrackItem = (props) => {
     // В текущем варианте таймаут сделан для того, чтобы событие закрытие дропдауна из
     // компонента Dropdown.jsx не приходило позднее, чем новое событие на открытие.
     setTimeout(() => {
-      let x = 0; let
-        y = 0;
+      let x = 0, y = 0;
       y = itemRef.current.getBoundingClientRect().y + 35;
       x = itemRef.current.getBoundingClientRect().right - 133;
       dispatch({
@@ -58,6 +57,7 @@ const HistoryTrackItem = (props) => {
       type: 'SET_ACTION',
       payload: {
         action: content,
+        serverResponse: serverResponse
       },
     });
   }
@@ -93,6 +93,9 @@ HistoryTrackItem.propTypes = {
   action: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
   content: PropTypes.string.isRequired,
+  serverResponse: PropTypes.string,
 };
-HistoryTrackItem.defaultProps = {};
+HistoryTrackItem.defaultProps = {
+  response: ''
+};
 export default HistoryTrackItem;

@@ -62,8 +62,6 @@ export function setAction(state = {
 }
 
 export function userInfo(state = {
-  login: '',
-  sublogin: '',
   actions: [],
   isUpdatedFromServer: false,
 }, action) {

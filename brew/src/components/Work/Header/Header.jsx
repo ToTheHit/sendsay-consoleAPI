@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import './header.css';
 import { useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Logo from '../../Global/Logo/Logo';
+import Logo from '../../../assets/logo.svg';
 import LogoutIcon from '../../../assets/Work/logout.svg';
 import FullscreenOpenIcon from '../../../assets/Work/fullscreenOpen.svg';
 import FullscreenCloseIcon from '../../../assets/Work/fullscreenClose.svg';

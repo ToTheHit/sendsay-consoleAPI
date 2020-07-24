@@ -1,6 +1,4 @@
-import React, {
-  useCallback, useEffect, useRef, useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState, } from 'react';
 import './editor.css';
 import { useDispatch, useSelector } from 'react-redux';
 import DragElement from '../../../assets/Work/drag-element.svg';
@@ -11,14 +9,14 @@ import globalVariables from '../../../GlobalVariables';
 
 const Editor = () => {
   const firstFieldRef = useRef(null);
+  const requestTextareaRef = useRef(null);
+  const responseTextareaRef = useRef(null);
   const wrapperRef = useRef(null);
   const handlerRef = useRef(null);
 
   const [isHandlerDragging, setIsHandlerDragging] = useState(false);
   const [isRequestFailed, setIsRequestFailed] = useState(false);
   const [isResponseFailed, setIsResponseFailed] = useState(false);
-  const [requestContent, setRequestContent] = useState('');
-  const [responseContent, setResponseContent] = useState('');
   const [isSending, setIsSending] = useState(false);
 
   const sendsayBridge = useSelector((state) => state.sendsayBridge.sendsay);
@@ -42,15 +40,15 @@ const Editor = () => {
 
   function prettyPrint() {
     let pretty;
-    if (!requestContent) return;
+    if (!requestTextareaRef.current.value) return;
     try {
-      pretty = JSON.stringify(stringToJSON(requestContent), undefined, 4);
+      pretty = JSON.stringify(stringToJSON(requestTextareaRef.current.value), undefined, 4);
     } catch (e) {
       console.error(e);
       setIsRequestFailed(true);
       return;
     }
-    setRequestContent(pretty);
+    requestTextareaRef.current.value = pretty;
   }
 
   function compareObjects(obj1, obj2) {
@@ -74,11 +72,12 @@ const Editor = () => {
   };
 
   function sendAction(action) {
-    if (isSending) return;
+    if (isSending || !action) return;
     setIsSending(true);
-    if (!action) return;
-    let obj; let isSuccess = false; let
-      serverResponse;
+    let obj;
+    let isSuccess = false;
+    let serverResponse;
+
     try {
       obj = stringToJSON(action);
     } catch (e) {
@@ -90,11 +89,11 @@ const Editor = () => {
 
     sendsayBridge.request(obj)
       .then((data) => {
-        setResponseContent(JSON.stringify(data, undefined, 4));
+        responseTextareaRef.current.value = JSON.stringify(data, undefined, 4);
         isSuccess = true;
       })
       .catch((err) => {
-        setResponseContent(JSON.stringify(err, undefined, 4));
+        responseTextareaRef.current.value = JSON.stringify(err, undefined, 4);
         serverResponse = JSON.stringify(err, undefined, 4);
         setIsResponseFailed(true);
       })
@@ -126,9 +125,26 @@ const Editor = () => {
       });
   }
 
+  const removeFailedBorder = () => {
+    if (isRequestFailed) {
+      setIsRequestFailed(false);
+    }
+    if (isResponseFailed) {
+      setIsResponseFailed(false);
+    }
+  }
+
   useEffect(() => {
     if (execAction.action) {
-      setRequestContent(execAction.action);
+      requestTextareaRef.current.value = execAction.action;
+      if (setAction.serverResponse) {
+        responseTextareaRef.current.value = setAction.serverResponse;
+        setIsResponseFailed(true);
+      } else {
+        responseTextareaRef.current.value = '';
+        setIsResponseFailed(false);
+      }
+
       sendAction(execAction.action);
       dispatch({
         type: 'EXEC_ACTION',
@@ -141,7 +157,15 @@ const Editor = () => {
 
   useEffect(() => {
     if (setAction.action) {
-      setRequestContent(setAction.action);
+      requestTextareaRef.current.value = setAction.action;
+      if (setAction.serverResponse) {
+        responseTextareaRef.current.value = setAction.serverResponse;
+        setIsResponseFailed(true);
+      } else {
+        responseTextareaRef.current.value = '';
+        setIsResponseFailed(false);
+      }
+
       dispatch({
         type: 'SET_ACTION',
         payload: {
@@ -213,15 +237,6 @@ const Editor = () => {
     };
   }, [drag]);
 
-  useEffect(() => {
-    if (isRequestFailed) {
-      setIsRequestFailed(false);
-    }
-    if (isResponseFailed) {
-      setIsResponseFailed(false);
-    }
-  }, [requestContent]);
-
   return (
     <div className="Editor">
       <div className="Editor__wrapper" ref={wrapperRef}>
@@ -233,10 +248,8 @@ const Editor = () => {
           </div>
           <textarea
             className={classNames('Editor__entry', (isRequestFailed && 'Editor__entry--failed'))}
-            value={requestContent}
-            onChange={(e) => {
-              setRequestContent(e.target.value);
-            }}
+            ref={requestTextareaRef}
+            onChange={removeFailedBorder}
           />
         </div>
         <div
@@ -259,10 +272,7 @@ const Editor = () => {
           <textarea
             disabled
             className={classNames('Editor__entry', (isResponseFailed && 'Editor__entry--failed'))}
-            value={responseContent}
-            onChange={(e) => {
-              setResponseContent(e.target.value);
-            }}
+            ref={responseTextareaRef}
           />
         </div>
       </div>
@@ -271,7 +281,7 @@ const Editor = () => {
         <div className="Editor__footerContent">
           <Button
             type="button"
-            onClick={() => sendAction(requestContent)}
+            onClick={() => sendAction(requestTextareaRef.current.value)}
             isSending={isSending}
           >
             Отправить

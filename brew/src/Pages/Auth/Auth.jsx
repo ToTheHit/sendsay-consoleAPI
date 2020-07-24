@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './auth.css';
 import { useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Logo from '../../components/Global/Logo/Logo';
+// import Logo from '../../components/Global/Logo/Logo';
+import Logo from '../../assets/logo.svg';
 import Emoji from '../../assets/Auth/emoji-neutral.svg';
 import classNames from '../../lib/classNames';
 import Button from '../../components/Global/Button/Button';
@@ -15,12 +16,15 @@ const Auth = () => {
   const [loginIsInvalid, setLoginIsInvalid] = useState(false);
   const [passwordIsInvalid, setPasswordIsInvalid] = useState(false);
   const [loginError, setLoginError] = useState('');
-  const [formData, setFormData] = useState({
+/*  const [formData, setFormData] = useState({
     login: '',
     sublogin: '',
     password: '',
-  });
+  });*/
   const sendsayBridge = useSelector((state) => state.sendsayBridge.sendsay);
+  const loginRef = useRef(null);
+  const subloginRef = useRef(null);
+  const passwordRef = useRef(null);
 
   useEffect(() => {
     sendsayBridge.setSessionFromCookie('sendsay_session');
@@ -35,8 +39,14 @@ const Auth = () => {
       });
   }, []);
 
+
   function checkFormData() {
     if (!isSending) {
+      const formData = {
+        login: loginRef.current.value,
+        sublogin: subloginRef.current.value,
+        password: passwordRef.current.value,
+      }
       if (formData.login && !formData.login.match(regexpLogin)) {
         if (formData.password && !formData.password.match(regexpPassword)) {
           setLoginError('');
@@ -45,8 +55,8 @@ const Auth = () => {
             login: formData.login,
             sublogin: formData.sublogin,
             password: formData.password,
-          }).then((data) => {
-            console.info('login -> ok', data);
+          }).then(() => {
+            console.info('login -> ok');
             document.cookie = `sendsay_session=${sendsayBridge.session}`;
             setIsSending(false);
             history.push('/work');
@@ -69,8 +79,7 @@ const Auth = () => {
   return (
     <div className="Auth">
       <div className="Auth__wrapper">
-        <Logo />
-
+        <Logo className="Auth__logo" />
         <div className="Auth__container">
           <div className="Auth__content">
             <h1 className="Auth__title">API-консолька</h1>
@@ -96,13 +105,7 @@ const Auth = () => {
                 className={classNames('Auth__input', (loginIsInvalid && 'Auth__input--invalid'))}
                 type="text"
                 required={loginIsInvalid}
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    login: e.target.value,
-                  });
-                  if (loginIsInvalid) setLoginIsInvalid(false);
-                }}
+                ref={loginRef}
               />
 
               <label className="Auth__label">
@@ -112,12 +115,7 @@ const Auth = () => {
               <input
                 className="Auth__input"
                 type="text"
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    sublogin: e.target.value,
-                  });
-                }}
+                ref={subloginRef}
               />
 
               <label
@@ -129,13 +127,7 @@ const Auth = () => {
                 className={classNames('Auth__input', (passwordIsInvalid && 'Auth__input--invalid'))}
                 type="password"
                 required={passwordIsInvalid}
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    password: e.target.value,
-                  });
-                  if (passwordIsInvalid) setPasswordIsInvalid(false);
-                }}
+                ref={passwordRef}
               />
               <Button
                 className="Auth__button"

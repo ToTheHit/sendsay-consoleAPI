@@ -16,6 +16,7 @@ const HistoryTrack = () => {
       <HistoryTrackItem
         key={action.id}
         isSuccess={action.isSuccess}
+        serverResponse={action.response}
         action={action.action}
         id={action.id}
         content={action.content}
